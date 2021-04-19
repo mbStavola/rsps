@@ -58,9 +58,9 @@ Dumps the stack of a running Rust process, given the pid.
 $ rsps stack 1337
 ```
 
-Currently limited to Linux only due to [rstack][4] only building on Linux.
+Currently limited to Linux only due to [rstack][2] only building on Linux.
 
-## License
+# License
 
 Licensed under either of
 
@@ -71,7 +71,7 @@ Licensed under either of
 
 at your option.
 
-## Contribution
+# Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
@@ -79,5 +79,5 @@ dual licensed as above, without any additional terms or conditions.
 
 [1]: https://github.com/google/gops
 [2]: https://github.com/sfackler/rstack
-[3]: ./LICENSE-MIT
-[4]: ./LICENSE-APACHE
+[3]: ./LICENSE-APACHE
+[4]: ./LICENSE-MIT
