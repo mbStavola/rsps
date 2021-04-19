@@ -1,6 +1,6 @@
 [package]
 name = "rsps"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Matt Stavola <matt@stavola.xyz>"]
 edition = "2018"
 description = "WIP"
