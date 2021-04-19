@@ -4,6 +4,22 @@ version = "0.0.0"
 authors = ["Matt Stavola <matt@stavola.xyz>"]
 edition = "2018"
 description = "WIP"
-license = "MIT"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "rsps"
+path = "src/main.rs"
 
 [dependencies]
+clap = "3.0.0-beta.2"
+object = "0.23.0"
+sysinfo = "0.17.1"
+lazy_static = "1.4.0"
+rayon = "1.5.0"
+console = "0.14.1"
+ansi_term = "0.12.1"
+anyhow = "1.0"
+tabwriter = { version = "1.2.1", features = ["ansi_formatting"] }
+
+[target.'cfg(linux)'.dependencies]
+rstack = "0.3.2"
