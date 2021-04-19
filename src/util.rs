@@ -9,20 +9,35 @@ lazy_static! {
     static ref RUST_MARKERS: HashSet<&'static str> = {
         let mut set = HashSet::new();
         set.insert("___rust_try");
+        set.insert("__rust_try");
         set.insert("___rust_alloc");
+        set.insert("__rust_alloc");
         set.insert("___rust_alloc_error_handler");
+        set.insert("__rust_alloc_error_handler");
         set.insert("___rust_alloc_zeroed");
+        set.insert("__rust_alloc_zeroed");
         set.insert("___rust_dealloc");
+        set.insert("__rust_dealloc");
         set.insert("___rust_drop_panic");
+        set.insert("__rust_drop_panic");
         set.insert("___rust_foreign_exception");
+        set.insert("__rust_foreign_exception");
         set.insert("___rust_panic_cleanup");
+        set.insert("__rust_panic_cleanup");
         set.insert("___rust_probestack");
+        set.insert("__rust_probestack");
         set.insert("___rust_realloc");
+        set.insert("__rust_realloc");
         set.insert("___rust_start_panic");
+        set.insert("__rust_start_panic");
         set.insert("_rust_begin_unwind");
+        set.insert("rust_begin_unwind");
         set.insert("_rust_eh_personality");
+        set.insert("rust_eh_personality");
         set.insert("_rust_oom");
+        set.insert("rust_oom");
         set.insert("_rust_panic");
+        set.insert("rust_panic");
         set
     };
 }
