@@ -38,7 +38,10 @@ impl RspsSubcommand for StackCommand {
         tracer
             .symbols(true)
             .ptrace_attach(true)
-            .snapshot(true)
+            // TODO(Matt): Investigate this
+            //  For some reason, this causes rsps to blow up with permissions errors,
+            //  even when strace is working just fine...
+            // .snapshot(true)
             .thread_names(true);
 
         let trace = tracer.trace(process.pid() as u32)?;
