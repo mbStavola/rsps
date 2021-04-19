@@ -425,7 +425,7 @@ checksum = "24d5f089152e60f62d28b835fbff2cd2e8dc0baf1ac13343bef92ab7eed84548"
 
 [[package]]
 name = "rsps"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ansi_term",
  "anyhow",
@@ -435,6 +435,7 @@ dependencies = [
  "object",
  "rayon",
  "rstack",
+ "rustc-demangle",
  "sysinfo",
  "tabwriter",
 ]
@@ -450,6 +451,12 @@ dependencies = [
  "log",
  "unwind",
 ]
+
+[[package]]
+name = "rustc-demangle"
+version = "0.1.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e3bad0ee36814ca07d7968269dd4b7ec89ec2da10c4bb613928d3077083c232"
 
 [[package]]
 name = "scopeguard"

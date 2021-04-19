@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  rsps:
+    build:
+      context: .
+    command: tail -f /dev/null
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    cap_add:
+      - SYS_PTRACE
