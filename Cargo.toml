@@ -1,6 +1,6 @@
 [package]
 name = "rsps"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Matt Stavola <matt@stavola.xyz>"]
 edition = "2018"
 description = "A command line tool to list and debug running Rust processes"
