@@ -45,6 +45,21 @@ $ rsps tree
 └── 59262  [rsps]
 ```
 
+## Inspect
+
+Display detailed information about a specific Rust process.
+
+```bash
+$ rsps inspect cargo # or rsps inspect <pid>
+PID: 78632
+Parent: 78274
+User: matt
+Name: cargo
+Command: /Users/matt/.rustup/toolchains/stable-x86_64-apple-darwin/bin/cargo
+CPU Usage: 6.57%
+Memory Usage: 24.66 MiB (1.11%)
+```
+
 ## Stack (Linux only)
 
 Dumps the stack of a running Rust process, given the name or pid.
