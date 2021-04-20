@@ -38,7 +38,7 @@ enum TreeNode<'a> {
 }
 
 impl RspsSubcommand for TreeCommand {
-    fn exec(&self, system: &System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
         let processes = system
             .get_processes()
             .values()

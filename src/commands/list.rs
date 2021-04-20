@@ -13,13 +13,13 @@ use crate::{commands::RspsSubcommand, util};
 pub struct ListCommand;
 
 impl RspsSubcommand for ListCommand {
-    fn exec(&self, system: &System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
         let header = format!(
             "{}\t{}\t{}\t{}\n",
             Color::Cyan.paint("PID"),
             Color::Cyan.paint("Parent"),
             Color::Cyan.paint("Name"),
-            Color::Cyan.paint("Path"),
+            Color::Cyan.paint("Command"),
         );
         tw.write_all(header.as_bytes())?;
 

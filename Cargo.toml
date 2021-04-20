@@ -1,6 +1,6 @@
 [package]
 name = "rsps"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Matt Stavola <matt@stavola.xyz>"]
 edition = "2018"
 description = "A command line tool to list and debug running Rust processes"
@@ -22,6 +22,7 @@ console = "0.14.1"
 ansi_term = "0.12.1"
 anyhow = "1.0"
 rustc-demangle = "0.1"
+byte-unit = { version = "4.0.10", default-features = false, features = ["std"] }
 tabwriter = { version = "1.2.1", features = ["ansi_formatting"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
