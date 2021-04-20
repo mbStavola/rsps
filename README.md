@@ -1,5 +1,7 @@
 # rsps
 
+![Crates.io](https://img.shields.io/crates/v/rsps)
+
 A command line tool to help find and debug Rust programs on your machine. Inspired by [gops][1] and a fit of boredom.
 
 This only works if the binaries haven't be stripped beforehand.
