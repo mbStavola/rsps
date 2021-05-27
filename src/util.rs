@@ -1,9 +1,11 @@
-use std::{collections::HashSet, fs::OpenOptions, io::Read, path::PathBuf};
+use std::{collections::HashSet, convert::TryFrom, fs::OpenOptions, io::Read, path::PathBuf};
 
 use anyhow::{anyhow, Result};
 use lazy_static::lazy_static;
 use object::{Object, ObjectSymbol};
 use sysinfo::{Process, ProcessExt};
+
+use crate::rsinfo::RsInfo;
 
 lazy_static! {
     static ref RUST_MARKERS: HashSet<&'static str> = {
@@ -42,7 +44,7 @@ lazy_static! {
     };
 }
 
-pub fn is_process_rusty(process: &Process) -> Result<bool> {
+pub fn is_process_rusty(process: &Process) -> Result<Option<RsInfo>> {
     let pwd = process
         .environ()
         .iter()
@@ -59,11 +61,20 @@ pub fn is_process_rusty(process: &Process) -> Result<bool> {
     file.read_to_end(&mut data)?;
 
     let object_file = object::File::parse(&data)?;
+    let info = RsInfo::try_from(&object_file)?;
+    if info.has_content() {
+        return Ok(Some(info));
+    }
 
+    // Couldn't parse any metadata-- use fallback method of symbol detection
     let has_rust_symbol = object_file
         .symbols()
         .filter_map(|symbol| symbol.name().ok())
         .any(|symbol_name| RUST_MARKERS.contains(symbol_name));
 
-    Ok(has_rust_symbol)
+    if has_rust_symbol {
+        Ok(Some(info))
+    } else {
+        Ok(None)
+    }
 }

@@ -16,7 +16,7 @@ pub struct StackCommand {
 
 impl RspsSubcommand for StackCommand {
     fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
-        let process = self.process.as_system_process(system, tw)?;
+        let (process, _) = self.process.as_system_process(system, tw)?;
 
         let mut tracer = TraceOptions::new();
         tracer

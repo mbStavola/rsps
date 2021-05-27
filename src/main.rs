@@ -2,6 +2,7 @@ use std::io::Write;
 
 use anyhow::Result;
 use clap::{AppSettings, Clap};
+use emboss::emboss;
 use sysinfo::{RefreshKind, SystemExt};
 use tabwriter::TabWriter;
 
@@ -10,7 +11,12 @@ use crate::commands::StackCommand;
 use crate::commands::{InspectCommand, ListCommand, RspsSubcommand, TreeCommand};
 
 mod commands;
+mod rsinfo;
 mod util;
+
+// Embed some build information into the final binary that
+// can be used by rsps... wait isn't that us?
+emboss!(group = rsps);
 
 /// List and debug Rust programs currently running on your system.
 #[derive(Clap)]

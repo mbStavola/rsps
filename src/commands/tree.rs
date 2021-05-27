@@ -1,9 +1,4 @@
-use std::{
-    cell::RefCell,
-    collections::{HashMap, VecDeque},
-    io::Write,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, io::Write, rc::Rc};
 
 use ansi_term::Color;
 use anyhow::Result;
@@ -43,8 +38,13 @@ impl RspsSubcommand for TreeCommand {
             .get_processes()
             .values()
             .par_bridge()
-            .filter(|process| util::is_process_rusty(process).unwrap_or(false))
-            .collect::<VecDeque<_>>();
+            .filter_map(|process| {
+                util::is_process_rusty(process)
+                    .ok()
+                    .flatten()
+                    .map(|info| (process, info))
+            })
+            .collect::<Vec<_>>();
 
         if processes.is_empty() {
             return Ok(());
@@ -54,7 +54,7 @@ impl RspsSubcommand for TreeCommand {
 
         let mut lookup = HashMap::<Pid, Rc<RefCell<TreeNode>>>::with_capacity(processes.len());
 
-        for process in processes.iter() {
+        for (process, _) in processes.iter() {
             lookup.insert(
                 process.pid(),
                 Rc::new(RefCell::new(TreeNode::Leaf { process })),
@@ -62,7 +62,7 @@ impl RspsSubcommand for TreeCommand {
         }
 
         let mut nodes = vec![];
-        for process in processes {
+        for (process, _) in processes {
             let node = lookup
                 .get(&process.pid())
                 .cloned()
