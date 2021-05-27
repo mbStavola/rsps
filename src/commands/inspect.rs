@@ -18,9 +18,9 @@ impl RspsSubcommand for InspectCommand {
     fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
         // Quickly refresh a few times to get a nice CPU usage sample
         system.refresh_processes();
-        let pid = {
-            let process = self.process.as_system_process(system, tw)?;
-            process.pid()
+        let (pid, info) = {
+            let (process, info) = self.process.as_system_process(system, tw)?;
+            (process.pid(), info)
         };
         system.refresh_process(pid);
 
@@ -44,7 +44,7 @@ impl RspsSubcommand for InspectCommand {
             .find(|user| *user.get_uid() == user_id)
             .map(User::get_name);
 
-        let inspect_output = format!(
+        let sysinfo_output = format!(
             "{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n",
             Color::Cyan.paint("PID"),
             Color::White.paint(process.pid().to_string()),
@@ -66,7 +66,41 @@ impl RspsSubcommand for InspectCommand {
             Color::Cyan.paint("Memory Usage"),
             Color::White.paint(memory_usage),
         );
-        tw.write_all(inspect_output.as_bytes())?;
+        tw.write_all(sysinfo_output.as_bytes())?;
+
+        if info.has_content() {
+            tw.write_all("\n".as_bytes())?;
+            let emboss_output = format!(
+                "{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n",
+                Color::Cyan.paint("Rust Version"),
+                Color::White.paint(
+                    info.rust_version()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
+                Color::Cyan.paint("Program Version"),
+                Color::White.paint(
+                    info.program_version()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
+                Color::Cyan.paint("Cargo Build Profile"),
+                Color::White.paint(
+                    info.build_profile()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
+                Color::Cyan.paint("Cargo Features"),
+                Color::White.paint(
+                    info.cargo_features()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
+                Color::Cyan.paint("Build Timestamp"),
+                Color::White.paint(info.build_time().map(String::as_str).unwrap_or("<unknown>")),
+            );
+            tw.write_all(emboss_output.as_bytes())?;
+        }
 
         Ok(())
     }

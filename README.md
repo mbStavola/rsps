@@ -2,7 +2,7 @@
 
 ![Crates.io](https://img.shields.io/crates/v/rsps)
 
-A command line tool to help find and debug Rust programs on your machine. Inspired by [gops][1] and a fit of boredom.
+A command line tool to help find and debug Rust programs on your machine. Inspired by [gops][gops] and a fit of boredom.
 
 This only works if the binaries haven't be stripped beforehand.
 
@@ -20,9 +20,9 @@ Lists all running Rust processes.
 
 ```bash
 $ rsps # or rsps list
-PID    Parent  Name  Path
-58988  54401   rg    /usr/local/bin/rg
-58989  47182   rsps  target/debug/rsps
+PID    Parent  Name  Command            Rust Ver.  Program Ver.
+34107  10940   rsps  target/debug/rsps  1.52.1     0.3.1
+34106  11719   rg    /usr/local/bin/rg  <unknown>  <unknown>
 ```
 
 ## Tree
@@ -60,6 +60,24 @@ Name: cargo
 Command: /Users/matt/.rustup/toolchains/stable-x86_64-apple-darwin/bin/cargo
 CPU Usage: 6.57%
 Memory Usage: 24.66 MiB (1.11%)
+```
+
+If the process has used the [emboss][emboss] crate, some additional information may be displayed:
+
+```bash
+PID: 34015
+Parent: 10940
+User: matt
+Name: rsps
+Command: target/debug/rsps
+CPU Usage: 315.58%
+Memory Usage: 21.92 MiB (1.75%)
+
+Rust Version: 1.52.1
+Program Version: 0.3.1
+Cargo Build Profile: debug
+Cargo Features: default
+Build Timestamp: 2021-05-26T23:45:47.849240+00:00
 ```
 
 ## Stack (Linux only)
@@ -106,16 +124,16 @@ Frame #7: <no symbol>
 [...]
 ```
 
-Currently limited to Linux only due to [rstack][2] only building on Linux.
+Currently limited to Linux only due to [rstack][rstack] only building on Linux.
 
 # License
 
 Licensed under either of
 
 * Apache License, Version 2.0
-  ([LICENSE-APACHE][3] or http://www.apache.org/licenses/LICENSE-2.0)
+  ([LICENSE-APACHE][apache-license] or http://www.apache.org/licenses/LICENSE-2.0)
 * MIT license
-  ([LICENSE-MIT][4] or http://opensource.org/licenses/MIT)
+  ([LICENSE-MIT][mit-license] or http://opensource.org/licenses/MIT)
 
 at your option.
 
@@ -125,7 +143,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
-[1]: https://github.com/google/gops
-[2]: https://github.com/sfackler/rstack
-[3]: ./LICENSE-APACHE
-[4]: ./LICENSE-MIT
+[gops]: https://github.com/google/gops
+[emboss]: https://github.com/mbStavola/emboss
+[rstack]: https://github.com/sfackler/rstack
+[apache-license]: ./LICENSE-APACHE
+[mit-license]: ./LICENSE-MIT

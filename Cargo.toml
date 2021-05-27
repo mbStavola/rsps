@@ -1,16 +1,20 @@
 [package]
 name = "rsps"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["Matt Stavola <matt@stavola.xyz>"]
 edition = "2018"
 description = "A command line tool to list and debug running Rust processes"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/mbStavola/rsps/"
 categories = ["command-line-utilities", "development-tools"]
+build = "build.rs"
 
 [[bin]]
 name = "rsps"
 path = "src/main.rs"
+
+[build-dependencies]
+vergen = { version = "5", default-features = false, features = ["build", "cargo", "rustc"] }
 
 [dependencies]
 clap = "3.0.0-beta.2"
@@ -24,6 +28,7 @@ anyhow = "1.0.40"
 rustc-demangle = "0.1.18"
 byte-unit = { version = "4.0.10", default-features = false, features = ["std"] }
 tabwriter = { version = "1.2.1", features = ["ansi_formatting"] }
+emboss = "0.3.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rstack = "0.3.2"

@@ -23,6 +23,8 @@ pub use list::ListCommand;
 pub use stack::StackCommand;
 pub use tree::TreeCommand;
 
+use crate::rsinfo::RsInfo;
+
 pub trait RspsSubcommand {
     fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()>;
 }
@@ -37,7 +39,7 @@ impl ProcessArg {
         &self,
         system: &'a System,
         tw: &'_ mut TabWriter<Vec<u8>>,
-    ) -> Result<&'a Process> {
+    ) -> Result<(&'a Process, RsInfo)> {
         let process = match &self {
             ProcessArg::Pid(pid) => system.get_process(*pid),
             ProcessArg::Name(name) => {
@@ -59,11 +61,9 @@ impl ProcessArg {
         process
             .ok_or_else(|| anyhow!("Process not found"))
             .and_then(|process| {
-                if util::is_process_rusty(process)? {
-                    Ok(process)
-                } else {
-                    Err(anyhow!("This is not a Rust process"))
-                }
+                util::is_process_rusty(process)?
+                    .map(|info| (process, info))
+                    .ok_or_else(|| anyhow!("This is not a Rust process"))
             })
     }
 }

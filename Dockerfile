@@ -1,4 +1,4 @@
-FROM rust:1.51-buster
+FROM rust:1.52-buster
 
 RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
@@ -13,5 +13,6 @@ RUN mkdir .cargo
 RUN cargo vendor > .cargo/config.toml
 
 ADD ./src ./src
+COPY ./build.rs .
 
 RUN cargo build

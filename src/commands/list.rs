@@ -15,11 +15,13 @@ pub struct ListCommand;
 impl RspsSubcommand for ListCommand {
     fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
         let header = format!(
-            "{}\t{}\t{}\t{}\n",
+            "{}\t{}\t{}\t{}\t{}\t{}\n",
             Color::Cyan.paint("PID"),
             Color::Cyan.paint("Parent"),
             Color::Cyan.paint("Name"),
             Color::Cyan.paint("Command"),
+            Color::Cyan.paint("Rust Ver."),
+            Color::Cyan.paint("Program Ver."),
         );
         tw.write_all(header.as_bytes())?;
 
@@ -27,12 +29,17 @@ impl RspsSubcommand for ListCommand {
             .get_processes()
             .values()
             .par_bridge()
-            .filter(|process| util::is_process_rusty(process).unwrap_or(false))
+            .filter_map(|process| {
+                util::is_process_rusty(process)
+                    .ok()
+                    .flatten()
+                    .map(|info| (process, info))
+            })
             .collect::<Vec<_>>();
 
-        for process in processes {
+        for (process, info) in processes {
             let row = format!(
-                "{}\t{}\t{}\t{}\n",
+                "{}\t{}\t{}\t{}\t{}\t{}\n",
                 Color::Green.paint(process.pid().to_string()),
                 Color::Green.paint(
                     process
@@ -42,6 +49,16 @@ impl RspsSubcommand for ListCommand {
                 ),
                 Color::Green.paint(process.name()),
                 Color::Green.paint(process.exe().to_str().unwrap_or("")),
+                Color::Green.paint(
+                    info.rust_version()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
+                Color::Green.paint(
+                    info.program_version()
+                        .map(String::as_str)
+                        .unwrap_or("<unknown>")
+                ),
             );
 
             tw.write_all(row.as_bytes())?;
