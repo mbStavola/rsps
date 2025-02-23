@@ -7,12 +7,12 @@ RUN apt-get update
 RUN apt-get install -y libunwind-dev
 
 COPY ./Cargo.lock .
-COPY ./Cargo.toml .
+COPY rsps/Cargo.toml .
 
 RUN mkdir .cargo
 RUN cargo vendor > .cargo/config.toml
 
-ADD ./src ./src
-COPY ./build.rs .
+ADD rsps/src ./src
+COPY rsps/build.rs .
 
 RUN cargo build

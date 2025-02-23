@@ -1,5 +1,6 @@
 use std::{borrow::Cow, convert::TryFrom};
 
+use emboss::EmbossingOptions;
 use object::{Object, ObjectSection};
 
 #[derive(Default)]
@@ -54,8 +55,9 @@ impl TryFrom<&object::File<'_>> for RsInfo {
 
         let section = section.unwrap();
         let data = section.data()?;
+        let text = String::from_utf8_lossy(data).to_string();
 
-        let metadata = emboss::extract_metadata(data)?;
+        let metadata = emboss::extract::extract_metadata(&text, EmbossingOptions::default())?;
 
         Ok(RsInfo {
             build_time: metadata.get("VERGEN_BUILD_TIMESTAMP").map(Cow::to_string),

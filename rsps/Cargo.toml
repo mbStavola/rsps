@@ -1,0 +1,33 @@
+[package]
+name = "rsps"
+version = "0.6.0"
+authors = ["Matt Stavola <matt@stavola.xyz>"]
+edition = "2024"
+description = "A command line tool to list and debug running Rust processes"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mbStavola/rsps/"
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "rsps"
+path = "src/main.rs"
+
+[build-dependencies]
+vergen = { version = "9.0.4", default-features = false, features = ["build", "cargo", "rustc"] }
+
+[dependencies]
+clap = { version = "4.5.30", features = ["derive"] }
+object = "0.36.7"
+sysinfo = "0.33.1"
+lazy_static = "1.5.0"
+rayon = "1.10.0"
+ansi_term = "0.12.1"
+anyhow = "1.0.96"
+rustc-demangle = "0.1.24"
+byte-unit = { version = "5.1.6", default-features = false, features = ["std", "byte"] }
+tabwriter = { version = "1.4.1", features = ["ansi_formatting"] }
+emboss = "0.4.0"
+rsps_vergen_emboss = { version = "0.1.0", path = "../rsps_vergen_emboss" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rstack = "0.3.3"
