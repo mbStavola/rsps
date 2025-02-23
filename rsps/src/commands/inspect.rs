@@ -4,7 +4,7 @@ use ansi_term::Color;
 use anyhow::{Result, anyhow};
 use byte_unit::{Byte, Unit, UnitType};
 use clap::Args;
-use sysinfo::{ProcessesToUpdate, System, User, Users};
+use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, User, Users};
 use tabwriter::TabWriter;
 
 use crate::commands::{ProcessArg, RspsSubcommand};
@@ -27,7 +27,13 @@ impl RspsSubcommand for InspectCommand {
             let (process, info) = self.process.as_system_process(system, tw)?;
             (process.pid(), info)
         };
-        system.refresh_processes(ProcessesToUpdate::Some(&[pid]), false);
+
+        std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+        system.refresh_processes_specifics(
+            ProcessesToUpdate::Some(&[pid]),
+            false,
+            ProcessRefreshKind::nothing().with_cpu(),
+        );
 
         let process = system
             .process(pid)
