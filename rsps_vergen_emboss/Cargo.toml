@@ -1,0 +1,11 @@
+[package]
+name = "rsps_vergen_emboss"
+version = "0.1.0"
+authors = ["Matt Stavola <matt@stavola.xyz>"]
+edition = "2024"
+description = "A simple macro to emboss vergen-based environment variables into your binary, primarily for rsps support"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mbStavola/rsps/"
+
+[dependencies]
+emboss = "0.4.0"

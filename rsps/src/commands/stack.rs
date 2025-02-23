@@ -2,20 +2,25 @@ use std::io::Write;
 
 use ansi_term::Color;
 use anyhow::Result;
-use clap::Clap;
+use clap::Subcommand;
 use rstack::TraceOptions;
 use sysinfo::{ProcessExt, System};
 use tabwriter::TabWriter;
 
 use crate::commands::{ProcessArg, RspsSubcommand};
 
-#[derive(Clap)]
+#[derive(Subcommand)]
 pub struct StackCommand {
     process: ProcessArg,
 }
 
 impl RspsSubcommand for StackCommand {
-    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(
+        &self,
+        system: &mut System,
+        users: &mut Users,
+        tw: &mut TabWriter<Vec<u8>>,
+    ) -> Result<()> {
         let (process, _) = self.process.as_system_process(system, tw)?;
 
         let mut tracer = TraceOptions::new();

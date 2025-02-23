@@ -1,48 +1,53 @@
 use std::io::Write;
 
 use ansi_term::Color;
-use anyhow::{anyhow, Result};
-use byte_unit::{Byte, ByteUnit};
-use clap::Clap;
-use sysinfo::{ProcessExt, System, SystemExt, User, UserExt};
+use anyhow::{Result, anyhow};
+use byte_unit::{Byte, Unit, UnitType};
+use clap::Args;
+use sysinfo::{ProcessesToUpdate, System, User, Users};
 use tabwriter::TabWriter;
 
 use crate::commands::{ProcessArg, RspsSubcommand};
 
-#[derive(Clap)]
+#[derive(Debug, Args)]
 pub struct InspectCommand {
     process: ProcessArg,
 }
 
 impl RspsSubcommand for InspectCommand {
-    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(
+        &self,
+        system: &mut System,
+        users: &mut Users,
+        tw: &mut TabWriter<Vec<u8>>,
+    ) -> Result<()> {
         // Quickly refresh a few times to get a nice CPU usage sample
-        system.refresh_processes();
+        system.refresh_processes(ProcessesToUpdate::All, false);
         let (pid, info) = {
             let (process, info) = self.process.as_system_process(system, tw)?;
             (process.pid(), info)
         };
-        system.refresh_process(pid);
+        system.refresh_processes(ProcessesToUpdate::Some(&[pid]), false);
 
         let process = system
-            .get_process(pid)
+            .process(pid)
             .ok_or_else(|| anyhow!("Process disappeared since last sample"))?;
 
         let cpu_usage = format!("{:.2}%", process.cpu_usage());
 
-        let memory_utilization = process.memory() as f32 / system.get_available_memory() as f32;
+        let memory_utilization = process.memory() as f32 / system.available_memory() as f32;
         let memory_usage = format!(
-            "{} ({})",
-            Byte::from_unit(process.memory() as f64, ByteUnit::KB)?.get_appropriate_unit(true),
-            format!("{:.2}%", memory_utilization * 100.0)
+            "{:.2} ({:.2}%)",
+            Byte::from_u64_with_unit(process.memory(), Unit::B)
+                .map(|unit| unit.get_appropriate_unit(UnitType::Binary))
+                .ok_or_else(|| anyhow!("process memory too large"))?,
+            memory_utilization * 100.0
         );
 
-        let user_id = process.uid;
-        let user = system
-            .get_users()
-            .iter()
-            .find(|user| *user.get_uid() == user_id)
-            .map(User::get_name);
+        let user = process
+            .user_id()
+            .and_then(|uid| users.get_user_by_id(uid))
+            .map(User::name);
 
         let sysinfo_output = format!(
             "{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n",
@@ -58,9 +63,9 @@ impl RspsSubcommand for InspectCommand {
             Color::Cyan.paint("User"),
             Color::White.paint(user.unwrap_or("")),
             Color::Cyan.paint("Name"),
-            Color::White.paint(process.name()),
+            Color::White.paint(process.name().to_string_lossy()),
             Color::Cyan.paint("Command"),
-            Color::White.paint(process.exe().to_str().unwrap_or("")),
+            Color::White.paint(process.exe().and_then(|exe| exe.to_str()).unwrap_or("")),
             Color::Cyan.paint("CPU Usage"),
             Color::White.paint(cpu_usage),
             Color::Cyan.paint("Memory Usage"),

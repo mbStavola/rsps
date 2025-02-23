@@ -1,9 +1,9 @@
 use std::io::Write;
 
 use anyhow::Result;
-use clap::{AppSettings, Clap};
-use emboss::emboss;
-use sysinfo::{RefreshKind, SystemExt};
+use clap::{Parser, Subcommand};
+use rsps_vergen_emboss::rsps_vergen_emboss;
+use sysinfo::RefreshKind;
 use tabwriter::TabWriter;
 
 #[cfg(target_os = "linux")]
@@ -16,18 +16,17 @@ mod util;
 
 // Embed some build information into the final binary that
 // can be used by rsps... wait isn't that us?
-emboss!(group = rsps);
+rsps_vergen_emboss!(group = rsps);
 
 /// List and debug Rust programs currently running on your system.
-#[derive(Clap)]
-#[clap(version = "0.3.0")]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[derive(Debug, Parser)]
+#[command(version, about, long_about = None)]
 struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Option<SubCommand>,
 }
 
-#[derive(Clap)]
+#[derive(Debug, Subcommand)]
 enum SubCommand {
     /// Lists all running Rust processes
     List,
@@ -53,8 +52,10 @@ fn main() -> Result<()> {
     };
 
     let mut system = sysinfo::System::new_with_specifics(RefreshKind::everything());
+    let mut users = sysinfo::Users::new_with_refreshed_list();
+
     let mut tw = TabWriter::new(Vec::<u8>::new());
-    rsps_subcommand.exec(&mut system, &mut tw)?;
+    rsps_subcommand.exec(&mut system, &mut users, &mut tw)?;
     tw.flush()?;
 
     let output = tw.into_inner()?;

@@ -2,9 +2,8 @@ use std::{cell::RefCell, collections::HashMap, io::Write, rc::Rc};
 
 use ansi_term::Color;
 use anyhow::Result;
-use clap::Clap;
 use rayon::prelude::*;
-use sysinfo::{Pid, Process, ProcessExt, System, SystemExt};
+use sysinfo::{Pid, Process, System, Users};
 use tabwriter::TabWriter;
 
 use crate::{commands::RspsSubcommand, util};
@@ -14,7 +13,7 @@ const L_CORNER: char = '└';
 const LINE: char = '─';
 const BAR: char = '│';
 
-#[derive(Clap)]
+#[derive(Debug)]
 pub struct TreeCommand;
 
 struct Tree<'a> {
@@ -33,9 +32,14 @@ enum TreeNode<'a> {
 }
 
 impl RspsSubcommand for TreeCommand {
-    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(
+        &self,
+        system: &mut System,
+        _users: &mut Users,
+        tw: &mut TabWriter<Vec<u8>>,
+    ) -> Result<()> {
         let processes = system
-            .get_processes()
+            .processes()
             .values()
             .par_bridge()
             .filter_map(|process| {
@@ -73,7 +77,7 @@ impl RspsSubcommand for TreeCommand {
                     let parent = lookup
                         .get(&parent)
                         .cloned()
-                        .map(|node| {
+                        .inspect(|node| {
                             let replacement = if let TreeNode::Leaf { process } = *node.borrow() {
                                 Some(TreeNode::Branch {
                                     process,
@@ -86,8 +90,6 @@ impl RspsSubcommand for TreeCommand {
                             if let Some(replacement) = replacement {
                                 node.replace(replacement);
                             }
-
-                            node
                         })
                         .expect("Parent should exist");
 
@@ -109,7 +111,7 @@ impl RspsSubcommand for TreeCommand {
         let last_node = tree.nodes.len() - 1;
         for (i, node) in tree.nodes.iter().enumerate() {
             let current = node.borrow();
-            print_tree(tw, &*current, 0, i == last_node, "")?;
+            print_tree(tw, &current, 0, i == last_node, "")?;
         }
 
         Ok(())
@@ -138,7 +140,7 @@ fn print_tree(
             let header = format!(
                 "{}\t[{}]\n",
                 Color::Cyan.paint(process.pid().to_string()),
-                Color::Yellow.paint(process.name()),
+                Color::Yellow.paint(process.name().to_string_lossy()),
             );
             tw.write_all(header.as_bytes())?;
 
@@ -151,14 +153,14 @@ fn print_tree(
             let last_node = children.len() - 1;
             for (i, node) in children.iter().enumerate() {
                 let current = node.borrow();
-                print_tree(tw, &*current, depth + 1, i == last_node, &prefix)?;
+                print_tree(tw, &current, depth + 1, i == last_node, &prefix)?;
             }
         }
         TreeNode::Leaf { process } => {
             let header = format!(
                 "{}\t[{}]\n",
                 Color::Cyan.paint(process.pid().to_string()),
-                Color::Yellow.paint(process.name()),
+                Color::Yellow.paint(process.name().to_string_lossy()),
             );
             tw.write_all(header.as_bytes())?;
         }

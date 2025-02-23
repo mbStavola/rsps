@@ -1,12 +1,8 @@
-use std::{
-    fmt::{Display, Formatter},
-    io::Write,
-    str::FromStr,
-};
+use std::{ffi::OsString, io::Write, str::FromStr};
 
 use ansi_term::Color;
-use anyhow::{anyhow, Result};
-use sysinfo::{Process, System, SystemExt};
+use anyhow::{Result, anyhow};
+use sysinfo::{Pid, Process, System, Users};
 use tabwriter::TabWriter;
 
 use crate::util;
@@ -26,11 +22,17 @@ pub use tree::TreeCommand;
 use crate::rsinfo::RsInfo;
 
 pub trait RspsSubcommand {
-    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()>;
+    fn exec(
+        &self,
+        system: &mut System,
+        users: &mut Users,
+        tw: &mut TabWriter<Vec<u8>>,
+    ) -> Result<()>;
 }
 
+#[derive(Debug, Clone)]
 pub enum ProcessArg {
-    Pid(i32),
+    Pid(usize),
     Name(String),
 }
 
@@ -41,20 +43,22 @@ impl ProcessArg {
         tw: &'_ mut TabWriter<Vec<u8>>,
     ) -> Result<(&'a Process, RsInfo)> {
         let process = match &self {
-            ProcessArg::Pid(pid) => system.get_process(*pid),
+            ProcessArg::Pid(pid) => system.process(Pid::from(*pid)),
             ProcessArg::Name(name) => {
-                let processes = system.get_process_by_name(name);
+                let processes = system
+                    .processes_by_name(&OsString::from(name))
+                    .collect::<Vec<_>>();
                 if processes.len() > 1 {
                     let warning = format!(
                         "{} {}\n\n",
                         Color::Yellow.paint("Multiple processes have this name."),
-                        "Dumping the stack of the first."
+                        "Selecting the first."
                     );
 
                     tw.write_all(warning.as_bytes())?;
                 }
 
-                processes.into_iter().next()
+                processes.iter().copied().next()
             }
         };
 
@@ -69,24 +73,13 @@ impl ProcessArg {
 }
 
 impl FromStr for ProcessArg {
-    type Err = ParseProcessArgError;
+    type Err = Box<dyn std::error::Error + Send + Sync>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Ok(pid) = s.parse::<i32>() {
+        if let Ok(pid) = s.parse::<usize>() {
             return Ok(ProcessArg::Pid(pid));
         }
 
         Ok(ProcessArg::Name(s.to_owned()))
-    }
-}
-
-#[derive(Debug)]
-pub struct ParseProcessArgError {
-    _priv: (),
-}
-
-impl Display for ParseProcessArgError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Could not parse process arg")
     }
 }

@@ -2,18 +2,22 @@ use std::io::Write;
 
 use ansi_term::Color;
 use anyhow::Result;
-use clap::Clap;
 use rayon::prelude::*;
-use sysinfo::{ProcessExt, System, SystemExt};
+use sysinfo::{System, Users};
 use tabwriter::TabWriter;
 
 use crate::{commands::RspsSubcommand, util};
 
-#[derive(Clap)]
+#[derive(Debug)]
 pub struct ListCommand;
 
 impl RspsSubcommand for ListCommand {
-    fn exec(&self, system: &mut System, tw: &mut TabWriter<Vec<u8>>) -> Result<()> {
+    fn exec(
+        &self,
+        system: &mut System,
+        _users: &mut Users,
+        tw: &mut TabWriter<Vec<u8>>,
+    ) -> Result<()> {
         let header = format!(
             "{}\t{}\t{}\t{}\t{}\t{}\n",
             Color::Cyan.paint("PID"),
@@ -26,7 +30,7 @@ impl RspsSubcommand for ListCommand {
         tw.write_all(header.as_bytes())?;
 
         let processes = system
-            .get_processes()
+            .processes()
             .values()
             .par_bridge()
             .filter_map(|process| {
@@ -47,8 +51,8 @@ impl RspsSubcommand for ListCommand {
                         .map(|parent| parent.to_string())
                         .unwrap_or_else(|| "".to_string())
                 ),
-                Color::Green.paint(process.name()),
-                Color::Green.paint(process.exe().to_str().unwrap_or("")),
+                Color::Green.paint(process.name().to_string_lossy()),
+                Color::Green.paint(process.exe().and_then(|exe| exe.to_str()).unwrap_or("")),
                 Color::Green.paint(
                     info.rust_version()
                         .map(String::as_str)

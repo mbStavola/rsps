@@ -1,9 +1,9 @@
 use std::{collections::HashSet, convert::TryFrom, fs::OpenOptions, io::Read, path::PathBuf};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use lazy_static::lazy_static;
 use object::{Object, ObjectSymbol};
-use sysinfo::{Process, ProcessExt};
+use sysinfo::Process;
 
 use crate::rsinfo::RsInfo;
 
@@ -45,22 +45,29 @@ lazy_static! {
 }
 
 pub fn is_process_rusty(process: &Process) -> Result<Option<RsInfo>> {
+    let Some(exe) = process.exe() else {
+        return Ok(None);
+    };
+
     let pwd = process
         .environ()
         .iter()
-        .find(|env| env.starts_with("PWD="))
-        .map(|pwd| pwd.strip_prefix("PWD=").unwrap())
+        .find(|env| env.to_string_lossy().starts_with("PWD="))
+        .map(|pwd| {
+            pwd.to_string_lossy()
+                .strip_prefix("PWD=")
+                .unwrap()
+                .to_string()
+        })
         .map(PathBuf::from)
         .ok_or_else(|| anyhow!("Process PWD doesn't seem to exist...?"))?;
 
-    let mut file = OpenOptions::new()
-        .read(true)
-        .open(pwd.join(process.exe()))?;
+    let mut file = OpenOptions::new().read(true).open(pwd.join(exe))?;
 
     let mut data = vec![];
     file.read_to_end(&mut data)?;
 
-    let object_file = object::File::parse(&data)?;
+    let object_file = object::File::parse(&*data)?;
     let info = RsInfo::try_from(&object_file)?;
     if info.has_content() {
         return Ok(Some(info));
